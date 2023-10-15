@@ -15,12 +15,18 @@ impl QueryRoot {
         vec![
             Member {
                 id: 1,
-                name: "Link".to_owned()
+                name: "Link".to_owned(),
             },
             Member {
                 id: 2,
-                name: "Mario".to_owned()
-            }
+                name: "Mario".to_owned(),
+            },
         ]
     }
+}
+
+pub type Schema = RootNode<'static, QueryRoot, EmptyMutation<()>, EmptySubscription<()>>;
+
+pub fn create_schema() -> Schema {
+    Schema::new(QueryRoot {}, EmptyMutation::new(), EmptySubscription::new())
 }
