@@ -90,12 +90,14 @@ impl Context {
         }
     }
 
-    pub fn update_members<T>(&self, callback: T)
+    pub fn update_members<T, O>(&self, callback: T) -> Option<O>
     where
-        T: Fn(&mut Vec<Member>),
+        T: Fn(&mut Vec<Member>) -> O,
     {
         if let Ok(mut storage) = self.storage.lock() {
-            callback(&mut storage.members);
+            Some(callback(&mut storage.members))
+        } else {
+            None
         }
     }
 
@@ -107,12 +109,14 @@ impl Context {
         }
     }
 
-    pub fn update_teams<T>(&self, callback: T)
+    pub fn update_teams<T, O>(&self, callback: T) -> Option<O>
     where
-        T: Fn(&mut Vec<Team>),
+        T: Fn(&mut Vec<Team>) -> O,
     {
         if let Ok(mut storage) = self.storage.lock() {
-            callback(&mut storage.teams);
+            Some(callback(&mut storage.teams))
+        } else {
+            None
         }
     }
 }
@@ -122,6 +126,13 @@ impl juniper::Context for Context {}
 #[derive(Clone)]
 pub struct Member {
     id: i32,
+    name: String,
+    knockouts: i32,
+    team_id: i32,
+}
+
+#[derive(GraphQLInputObject)]
+struct NewMember {
     name: String,
     knockouts: i32,
     team_id: i32,
@@ -188,13 +199,42 @@ impl QueryRoot {
         ctx.members()
     }
 
+    fn member(ctx: &Context, id: i32) -> Option<Member> {
+        ctx.members().iter().find_map(|member| {
+            if member.id == id {
+                Some(member.clone())
+            } else {
+                None
+            }
+        })
+    }
+
     fn teams(ctx: &Context) -> Vec<Team> {
         ctx.teams()
     }
 }
 
-pub type Schema = RootNode<'static, QueryRoot, EmptyMutation<Context>, EmptySubscription<Context>>;
+pub struct MutationRoot;
+
+#[graphql_object(context = Context)]
+impl MutationRoot {
+    fn create_member(ctx: &Context, new_member: NewMember) -> Option<Member> {
+        let member = ctx.update_members(|members| {
+            let member = Member {
+                id: members.len().try_into().unwrap(),
+                knockouts: new_member.knockouts,
+                team_id: new_member.team_id,
+                name: new_member.name.clone(),
+            };
+            members.push(member.clone());
+            member
+        });
+        member
+    }
+}
+
+pub type Schema = RootNode<'static, QueryRoot, MutationRoot, EmptySubscription<Context>>;
 
 pub fn create_schema() -> Schema {
-    Schema::new(QueryRoot {}, EmptyMutation::new(), EmptySubscription::new())
+    Schema::new(QueryRoot {}, MutationRoot {}, EmptySubscription::new())
 }
