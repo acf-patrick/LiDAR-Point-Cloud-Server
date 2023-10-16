@@ -1,8 +1,15 @@
 mod schema;
 
+use std::sync::{Arc, Mutex};
+
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use juniper::http::{graphiql::graphiql_source, GraphQLRequest};
-use schema::{create_schema, Schema};
+use schema::{create_schema, mockup_storage, Context, Schema, Storage};
+
+struct AppData {
+    schema: Schema,
+    storage: Arc<Mutex<Storage>>,
+}
 
 #[get("/")]
 async fn hello() -> impl Responder {
@@ -10,25 +17,30 @@ async fn hello() -> impl Responder {
 }
 
 #[post("/graphql")]
-async fn graphql(schema: web::Data<Schema>, data: web::Json<GraphQLRequest>) -> impl Responder {
-    let res = data.execute(&schema, &()).await;
+async fn graphql(app_data: web::Data<AppData>, data: web::Json<GraphQLRequest>) -> impl Responder {
+    let ctx = Context::new(&app_data.storage);
+
+    let res = data.execute(&app_data.schema, &ctx).await;
     serde_json::to_string(&res)
 }
 
 #[get("/graphiql")]
 async fn graphiql() -> impl Responder {
-    let html = graphiql_source("http://localhost:8080/graphql", None);
+    let html = graphiql_source("/graphql", None);
     HttpResponse::Ok().body(html)
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let schema = web::Data::new(create_schema());
+    let app_data = web::Data::new(AppData {
+        schema: create_schema(),
+        storage: Arc::new(Mutex::new(mockup_storage())),
+    });
 
     println!("Server running on port 8080");
     HttpServer::new(move || {
         App::new()
-            .app_data(schema.clone())
+            .app_data(app_data.clone())
             .service(hello)
             .service(graphql)
             .service(graphiql)
