@@ -187,6 +187,7 @@ version = "0.1.0"
 dependencies = [
  "actix-web",
  "juniper",
+ "las",
  "serde",
  "serde_json",
 ]
@@ -363,7 +364,7 @@ dependencies = [
  "rand 0.7.3",
  "serde",
  "serde_json",
- "uuid",
+ "uuid 0.8.2",
 ]
 
 [[package]]
@@ -850,7 +851,7 @@ dependencies = [
  "smartstring",
  "static_assertions",
  "url",
- "uuid",
+ "uuid 0.8.2",
 ]
 
 [[package]]
@@ -870,6 +871,31 @@ name = "language-tags"
 version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d4345964bb142484797b161f473a503a434de77149dd8c7427788c6e13379388"
+
+[[package]]
+name = "las"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6021d378135165202cd287627dd6fbb25fb80cc740adf72ce5576fab1946a4c3"
+dependencies = [
+ "byteorder",
+ "chrono",
+ "laz",
+ "log",
+ "num-traits",
+ "thiserror",
+ "uuid 1.4.1",
+]
+
+[[package]]
+name = "laz"
+version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b25725927b0a5a0d86c12a18dac2c11ecb8caca47d37bc45b77a187d8f28dd21"
+dependencies = [
+ "byteorder",
+ "num-traits",
+]
 
 [[package]]
 name = "lazy_static"
@@ -1517,6 +1543,12 @@ name = "uuid"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
+
+[[package]]
+name = "uuid"
+version = "1.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "79daa5ed5740825c40b389c5e50312b9c86df53fccd33f281df655642b43869d"
 
 [[package]]
 name = "version_check"
