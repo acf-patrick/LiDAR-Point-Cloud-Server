@@ -1,5 +1,7 @@
 use juniper::*;
 
+use super::shared::Color;
+
 #[derive(GraphQLObject)]
 pub struct Point {
     x: f64,
@@ -46,23 +48,6 @@ impl Point {
             intensity: 0,
             gps_time: None,
             point_source_id: 0,
-        }
-    }
-}
-
-#[derive(GraphQLObject)]
-struct Color {
-    red: i32,
-    green: i32,
-    blue: i32,
-}
-
-impl From<las::Color> for Color {
-    fn from(value: las::Color) -> Self {
-        Color {
-            red: value.red.into(),
-            green: value.green.into(),
-            blue: value.blue.into(),
         }
     }
 }

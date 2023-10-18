@@ -1,17 +1,19 @@
-use crate::models::las::Point;
 use juniper::*;
+
+use crate::query::las::QueryLas;
+use crate::context::Source;
 
 /// Abstract type for query root
 pub struct Query;
 
-#[graphql_object]
+#[graphql_object(context = Source)]
 impl Query {
     fn api() -> &str {
         "v1.0.0"
     }
 
-    fn point() -> Point {
-        Point::new()
+    fn las() -> QueryLas {
+      QueryLas
     }
 }
 
@@ -26,7 +28,7 @@ impl Mutation {
     }
 }
 
-pub type Schema = RootNode<'static, Query, EmptyMutation<()>, EmptySubscription<()>>;
+pub type Schema = RootNode<'static, Query, EmptyMutation<Source>, EmptySubscription<Source>>;
 
 pub fn create_schema() -> Schema {
     Schema::new(Query {}, EmptyMutation::new(), EmptySubscription::new())

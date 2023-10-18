@@ -1,5 +1,5 @@
 [package]
-name = "actix_juniper_diesel"
+name = "point_cloud_server"
 version = "0.1.0"
 edition = "2021"
 

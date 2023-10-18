@@ -1,13 +1,14 @@
+mod context;
 mod models;
+mod query;
 mod schema;
-
-use std::time::{Duration, Instant};
 
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use dotenvy::dotenv;
 use juniper::http::{graphiql::graphiql_source, GraphQLRequest};
-use las::{Read, Reader};
+use las::Reader;
 use schema::{create_schema, Schema};
+use context::Source;
 
 #[get("/")]
 async fn hello() -> impl Responder {
@@ -24,55 +25,22 @@ async fn graphiql() -> impl Responder {
 
 #[post("/graphql")]
 async fn graphql(schema: web::Data<Schema>, data: web::Json<GraphQLRequest>) -> impl Responder {
-    let res = data.execute(&schema, &()).await;
-    HttpResponse::Ok().json(res)
+    let source = Source::Null;
+    let res = data.execute(&schema, &source).await;
+    serde_json::to_string(&res)
 }
 
-#[derive(Debug, Default)]
-struct Point {
-    x: f64,
-    y: f64,
-    z: f64,
-}
+// struct AppState {}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    dotenv().ok();
+    let _ = dotenv();
 
     let file_path = std::env::var("PC_FILE").expect("PC_FILE must be set for test");
-    let mut reader = Reader::from_path(file_path).unwrap();
-    let mut point_count = 0;
-    let mut max = Point::default();
-
-    let start = Instant::now();
-    for point in reader.points() {
-        if let Ok(point) = point {
-            if point.x > max.x {
-                max.x = point.x;
-            }
-            if point.y > max.y {
-                max.y = point.y;
-            }
-            if point.z > max.z {
-                max.z = point.z;
-            }
-            
-            point_count += 1;
-        }
-
-        if point_count >= 3_000_000 {
-            // break;
-        }
-    }
-    let end = Instant::now();
-    
-    let elapsed = end - start;
-    println!("{point_count} points processed in {} seconds", elapsed.as_secs());
-
-    println!("{:#?}", max);
+    let mut _reader = Reader::from_path(file_path).unwrap();
 
     let schema = web::Data::new(create_schema());
-    
+
     println!("Server running on port 8080");
     HttpServer::new(move || {
         App::new()
