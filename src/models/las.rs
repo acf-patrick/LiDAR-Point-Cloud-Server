@@ -16,8 +16,12 @@ impl Point {
     pub fn new() -> Point {
         Point {
             classification: Classification::Unclassified,
-            color: None,
-            x: 0.0,
+            color: Some(Color {
+                red: 0xff,
+                green: 0,
+                blue: 0,
+            }),
+            x: 0.0,         
             y: 0.0,
             z: 0.0,
             intensity: 0,

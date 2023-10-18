@@ -1,8 +1,12 @@
 mod models;
 mod schema;
 
+use std::{fs::File, io::BufReader};
+
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use dotenvy::dotenv;
 use juniper::http::{graphiql::graphiql_source, GraphQLRequest};
+use las::{Read, Reader};
 use schema::{create_schema, Schema};
 
 #[get("/")]
@@ -20,12 +24,17 @@ async fn graphiql() -> impl Responder {
 
 #[post("/graphql")]
 async fn graphql(schema: web::Data<Schema>, data: web::Json<GraphQLRequest>) -> impl Responder {
-    let user = data.execute(&schema, &()).await;
-    HttpResponse::Ok().json(user)
+    let res = data.execute(&schema, &()).await;
+    HttpResponse::Ok().json(res)
 }
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> Result<(), std::io::Error> {
+    dotenv().ok();
+
+    let file_path = std::env::var("PC_FILE").expect("PC_FILE must be set for test");
+    let mut _reader = Reader::from_path(file_path).unwrap();
+
     let schema = web::Data::new(create_schema());
 
     println!("Server running on port 8080");
