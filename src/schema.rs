@@ -1,19 +1,21 @@
 use juniper::*;
 
-use crate::query::las::QueryLas;
 use crate::context::Source;
+use crate::queries::las::QueryLas;
 
 /// Abstract type for query root
 pub struct Query;
 
 #[graphql_object(context = Source)]
 impl Query {
+    #[graphql(description = "API version")]
     fn api() -> &str {
         "v1.0.0"
     }
 
+    #[graphql(description = "Node for LAS/LAZ file query")]
     fn las() -> QueryLas {
-      QueryLas
+        QueryLas
     }
 }
 
@@ -22,7 +24,7 @@ pub struct Mutation;
 
 #[graphql_object]
 impl Mutation {
-    #[graphql(description = "api version")]
+    #[graphql(description = "API version")]
     fn api() -> &str {
         "v1.0.0"
     }

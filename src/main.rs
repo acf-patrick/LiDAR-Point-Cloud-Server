@@ -1,14 +1,21 @@
 mod context;
 mod models;
-mod query;
+mod queries;
 mod schema;
 
+use std::sync::{Arc, Mutex};
+
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use context::Source;
 use dotenvy::dotenv;
 use juniper::http::{graphiql::graphiql_source, GraphQLRequest};
 use las::Reader;
 use schema::{create_schema, Schema};
-use context::Source;
+
+struct AppState {
+    root_node: Schema,
+    source: Source,
+}
 
 #[get("/")]
 async fn hello() -> impl Responder {
@@ -24,27 +31,30 @@ async fn graphiql() -> impl Responder {
 }
 
 #[post("/graphql")]
-async fn graphql(schema: web::Data<Schema>, data: web::Json<GraphQLRequest>) -> impl Responder {
-    let source = Source::Null;
-    let res = data.execute(&schema, &source).await;
+async fn graphql(
+    app_state: web::Data<AppState>,
+    data: web::Json<GraphQLRequest>,
+) -> impl Responder {
+    let res = data.execute(&app_state.root_node, &app_state.source).await;
     serde_json::to_string(&res)
 }
-
-// struct AppState {}
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let _ = dotenv();
 
     let file_path = std::env::var("PC_FILE").expect("PC_FILE must be set for test");
-    let mut _reader = Reader::from_path(file_path).unwrap();
+    let reader = Reader::from_path(file_path).unwrap();
 
-    let schema = web::Data::new(create_schema());
+    let app_state = web::Data::new(AppState {
+        root_node: create_schema(),
+        source: Source::Las(Arc::new(Mutex::new(reader))),
+    });
 
     println!("Server running on port 8080");
     HttpServer::new(move || {
         App::new()
-            .app_data(schema.clone())
+            .app_data(app_state.clone())
             .service(hello)
             .service(graphiql)
             .service(graphql)
