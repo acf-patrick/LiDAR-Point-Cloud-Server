@@ -1,7 +1,9 @@
 mod models;
 mod schema;
 
-use actix_web::{cookie::time::Instant, get, post, web, App, HttpResponse, HttpServer, Responder};
+use std::time::{Duration, Instant};
+
+use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use dotenvy::dotenv;
 use juniper::http::{graphiql::graphiql_source, GraphQLRequest};
 use las::{Read, Reader};
@@ -54,6 +56,7 @@ async fn main() -> std::io::Result<()> {
             if point.z > max.z {
                 max.z = point.z;
             }
+            
             point_count += 1;
         }
 
@@ -62,14 +65,14 @@ async fn main() -> std::io::Result<()> {
         }
     }
     let end = Instant::now();
-
+    
     let elapsed = end - start;
-    println!("{point_count} points processed in {} seconds", elapsed.as_seconds_f64());
+    println!("{point_count} points processed in {} seconds", elapsed.as_secs());
 
     println!("{:#?}", max);
 
     let schema = web::Data::new(create_schema());
-
+    
     println!("Server running on port 8080");
     HttpServer::new(move || {
         App::new()
