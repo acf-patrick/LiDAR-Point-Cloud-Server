@@ -1,37 +1,30 @@
-use juniper::*;
+// @generated automatically by Diesel CLI.
 
-use crate::context::Source;
-use crate::queries::las::QueryLas;
-
-/// Abstract type for query root
-pub struct Query;
-
-#[graphql_object(context = Source)]
-impl Query {
-    #[graphql(description = "API version")]
-    fn api() -> &str {
-        "v1.0.0"
-    }
-
-    #[graphql(description = "Node for LAS/LAZ file query")]
-    fn las() -> QueryLas {
-        QueryLas
+diesel::table! {
+    files (id) {
+        #[max_length = 255]
+        id -> Varchar,
+        #[max_length = 255]
+        path -> Nullable<Varchar>,
     }
 }
 
-/// Abstract type for mutation root
-pub struct Mutation;
-
-#[graphql_object]
-impl Mutation {
-    #[graphql(description = "API version")]
-    fn api() -> &str {
-        "v1.0.0"
+diesel::table! {
+    parts (id) {
+        #[max_length = 255]
+        id -> Varchar,
+        #[max_length = 255]
+        file_id -> Varchar,
+        x -> Nullable<Float8>,
+        y -> Nullable<Float8>,
+        z -> Nullable<Float8>,
+        edge -> Nullable<Float4>,
     }
 }
 
-pub type Schema = RootNode<'static, Query, EmptyMutation<Source>, EmptySubscription<Source>>;
+diesel::joinable!(parts -> files (file_id));
 
-pub fn create_schema() -> Schema {
-    Schema::new(Query {}, EmptyMutation::new(), EmptySubscription::new())
-}
+diesel::allow_tables_to_appear_in_same_query!(
+    files,
+    parts,
+);

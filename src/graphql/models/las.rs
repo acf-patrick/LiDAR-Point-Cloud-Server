@@ -33,6 +33,7 @@ impl From<las::Point> for Point {
     }
 }
 
+#[allow(dead_code)]
 impl Point {
     pub fn new() -> Point {
         Point {

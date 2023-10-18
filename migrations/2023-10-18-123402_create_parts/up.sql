@@ -1,0 +1,10 @@
+-- Your SQL goes here
+CREATE TABLE parts (
+  id VARCHAR(255) PRIMARY KEY,
+  file_id VARCHAR(255) NOT NULL,
+  x DOUBLE PRECISION,
+  y DOUBLE PRECISION,
+  z DOUBLE PRECISION,
+  edge REAL,
+  CONSTRAINT fk_file FOREIGN KEY(file_id) REFERENCES files(id)
+)

@@ -1,16 +1,15 @@
-mod context;
-mod models;
-mod queries;
+mod graphql;
 mod schema;
 
+use graphql::*;
 use std::sync::{Arc, Mutex};
 
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use context::Source;
 use dotenvy::dotenv;
+use graphql::schema::{create_schema, Schema};
 use juniper::http::{graphiql::graphiql_source, GraphQLRequest};
 use las::Reader;
-use schema::{create_schema, Schema};
 
 struct AppState {
     root_node: Schema,
@@ -31,7 +30,7 @@ async fn graphiql() -> impl Responder {
 }
 
 #[post("/graphql")]
-async fn graphql(
+async fn graphql_handler(
     app_state: web::Data<AppState>,
     data: web::Json<GraphQLRequest>,
 ) -> impl Responder {
@@ -57,7 +56,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(app_state.clone())
             .service(hello)
             .service(graphiql)
-            .service(graphql)
+            .service(graphql_handler)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
