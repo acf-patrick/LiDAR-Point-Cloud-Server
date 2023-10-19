@@ -1,0 +1,9 @@
+-- Your SQL goes here
+CREATE TABLE files(
+  id TEXT NOT NULL PRIMARY KEY,
+  file_id TEXT NOT NULL,
+  x REAL NOT NULL,
+  y REAL NOT NULL,
+  z REAL NOT NULL,
+  edge REAL NOT NULL
+)
