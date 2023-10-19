@@ -2,7 +2,7 @@ mod graphql;
 mod models;
 mod schema;
 
-use diesel::{Connection, PgConnection};
+use diesel::{Connection, SqliteConnection};
 use graphql::*;
 use std::sync::{Arc, Mutex};
 
@@ -45,8 +45,9 @@ async fn main() -> std::io::Result<()> {
     let _ = dotenv();
 
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let _conn =
-        PgConnection::establish(&db_url).expect(format!("Error connecting to {}", db_url).as_str());
+    
+    let _conn = SqliteConnection::establish(&db_url)
+        .expect(format!("Error connecting to {}", db_url).as_str());
 
     let file_path = if cfg!(debug_assertions) {
         "./assets/point-cloud.las".to_owned()
