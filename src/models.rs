@@ -1,11 +1,11 @@
 use crate::schema::*;
 use diesel::{
-    prelude::{Identifiable, Queryable},
+    prelude::{Identifiable, Insertable, Queryable},
     Selectable,
 };
 
 /// Part composing the point cloud file
-#[derive(Queryable, Identifiable, Selectable, Debug)]
+#[derive(Queryable, Identifiable, Selectable, Insertable, Debug)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct File {
     pub id: String,

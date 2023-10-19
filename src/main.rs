@@ -2,10 +2,10 @@ mod graphql;
 mod models;
 mod schema;
 
-use graphql::*;
-use std::sync::{Arc, Mutex};
-use models::*;
 use diesel::prelude::*;
+use graphql::*;
+use models::*;
+use std::sync::{Arc, Mutex};
 
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use context::Source;
@@ -13,6 +13,7 @@ use dotenvy::dotenv;
 use graphql::schema::{create_schema, Schema};
 use juniper::http::{graphiql::graphiql_source, GraphQLRequest};
 use las::Reader;
+use uuid::Uuid;
 
 struct AppState {
     root_node: Schema,
@@ -52,16 +53,22 @@ async fn main() -> std::io::Result<()> {
     let mut conn = SqliteConnection::establish(&db_url)
         .expect(format!("Error connecting to {}", db_url).as_str());
 
-    let results = files
-        .filter(id.eq("id"))
-        .limit(5)
-        .select(File::as_select())
-        .load(&mut conn)
-        .expect("Error loading posts");
+    let new_file = File {
+        id: Uuid::new_v4().into(),
+        file_id: Uuid::new_v4().into(),
+        edge: 2.0,
+        x: 10.0,
+        y: 10.0,
+        z: 10.0,
+    };
 
-    for result in results {
-      println!("{:#?}", result);
-    }
+    let record = diesel::insert_into(files)
+        .values(&new_file)
+        .returning(File::as_returning())
+        .get_result(&mut conn)
+        .expect("Error saving new file");
+
+    println!("{:#?}", record);
 
     return Ok(());
 

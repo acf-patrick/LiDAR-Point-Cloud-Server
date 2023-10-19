@@ -516,7 +516,6 @@ dependencies = [
  "diesel_derives",
  "libsqlite3-sys",
  "time",
- "uuid 0.8.2",
 ]
 
 [[package]]
