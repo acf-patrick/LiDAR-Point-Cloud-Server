@@ -1,76 +1,32 @@
 mod graphql;
+mod handlers;
 mod models;
 mod schema;
 
-use diesel::prelude::*;
-use graphql::*;
-use models::*;
-use std::sync::{Arc, Mutex};
-
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{web, App, HttpServer};
 use context::Source;
+use diesel::prelude::*;
 use dotenvy::dotenv;
 use graphql::schema::{create_schema, Schema};
-use juniper::http::{graphiql::graphiql_source, GraphQLRequest};
 use las::Reader;
-use uuid::Uuid;
+use std::sync::{Arc, Mutex};
 
-struct AppState {
-    root_node: Schema,
-    source: Source,
-}
+use graphql::*;
+use handlers::*;
 
-#[get("/")]
-async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello world!")
-}
-
-#[get("/graphiql")]
-async fn graphiql() -> impl Responder {
-    let html = graphiql_source("/graphql", None);
-    HttpResponse::Ok()
-        .content_type("text/html; charset=utf-8")
-        .body(html)
-}
-
-#[post("/graphql")]
-async fn graphql_handler(
-    app_state: web::Data<AppState>,
-    data: web::Json<GraphQLRequest>,
-) -> impl Responder {
-    let res = data.execute(&app_state.root_node, &app_state.source).await;
-    serde_json::to_string(&res)
+pub struct AppState {
+    pub root_node: Schema,
+    pub source: Source,
 }
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    use self::schema::files::dsl::*;
-
     let _ = dotenv();
 
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
-    let mut conn = SqliteConnection::establish(&db_url)
+    let _conn = SqliteConnection::establish(&db_url)
         .expect(format!("Error connecting to {}", db_url).as_str());
-
-    let new_file = File {
-        id: Uuid::new_v4().into(),
-        file_id: Uuid::new_v4().into(),
-        edge: 2.0,
-        x: 10.0,
-        y: 10.0,
-        z: 10.0,
-    };
-
-    let record = diesel::insert_into(files)
-        .values(&new_file)
-        .returning(File::as_returning())
-        .get_result(&mut conn)
-        .expect("Error saving new file");
-
-    println!("{:#?}", record);
-
-    return Ok(());
 
     let file_path = if cfg!(debug_assertions) {
         "./assets/point-cloud.las".to_owned()
@@ -88,7 +44,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(app_state.clone())
-            .service(hello)
+            .service(root)
             .service(graphiql)
             .service(graphql_handler)
     })
