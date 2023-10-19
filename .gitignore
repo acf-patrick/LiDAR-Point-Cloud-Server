@@ -1,3 +1,6 @@
 /target
 .env
 .vscode
+*.las
+*.laz
+*.e57
