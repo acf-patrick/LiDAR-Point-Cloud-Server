@@ -1,6 +1,8 @@
 mod graphql;
 mod schema;
+mod models;
 
+use diesel::{Connection, PgConnection};
 use graphql::*;
 use std::sync::{Arc, Mutex};
 
@@ -41,6 +43,9 @@ async fn graphql_handler(
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let _ = dotenv();
+
+    let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let conn = PgConnection::establish(&db_url).expect(format!("Error connecting to {}", db_url).as_str());
 
     let file_path = std::env::var("PC_FILE").expect("PC_FILE must be set for test");
     let reader = Reader::from_path(file_path).unwrap();
