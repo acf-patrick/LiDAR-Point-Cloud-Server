@@ -2,9 +2,10 @@ mod graphql;
 mod models;
 mod schema;
 
-use diesel::{Connection, SqliteConnection};
 use graphql::*;
 use std::sync::{Arc, Mutex};
+use models::*;
+use diesel::prelude::*;
 
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use context::Source;
@@ -42,12 +43,27 @@ async fn graphql_handler(
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    use self::schema::files::dsl::*;
+
     let _ = dotenv();
 
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    
-    let _conn = SqliteConnection::establish(&db_url)
+
+    let mut conn = SqliteConnection::establish(&db_url)
         .expect(format!("Error connecting to {}", db_url).as_str());
+
+    let results = files
+        .filter(id.eq("id"))
+        .limit(5)
+        .select(File::as_select())
+        .load(&mut conn)
+        .expect("Error loading posts");
+
+    for result in results {
+      println!("{:#?}", result);
+    }
+
+    return Ok(());
 
     let file_path = if cfg!(debug_assertions) {
         "./assets/point-cloud.las".to_owned()

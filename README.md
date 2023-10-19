@@ -1,5 +1,3 @@
-![point-cloud-preview](assets/point-cloud.png)
-
 # Point cloud server
 
 Extensible point cloud server using **GraphQL** and **Actix-web**
@@ -12,3 +10,6 @@ Supported format :
 - [x] LAZ
 - [ ] E57
 - [ ] PTS
+
+
+![point-cloud-preview](assets/point-cloud.png)
