@@ -1,5 +1,5 @@
-use crate::context::Source;
-use crate::models::las::Point;
+use crate::graphql::models::las::Point;
+use crate::graphql::context::Source;
 use juniper::graphql_object;
 use las::Read;
 
