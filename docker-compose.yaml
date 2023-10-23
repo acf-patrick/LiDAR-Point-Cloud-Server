@@ -1,0 +1,8 @@
+services:
+  server:
+    image: acfpatrick/point-cloud-server
+    build: 
+      context: .
+      target: final
+    ports:
+      - "8080:8080"

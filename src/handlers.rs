@@ -1,4 +1,6 @@
-use crate::AppState;
+use std::sync::Arc;
+
+use crate::{graphql::context::Context, AppState};
 use actix_web::{get, post, web, HttpResponse, Responder};
 use juniper::http::{graphiql::graphiql_source, GraphQLRequest};
 
@@ -20,6 +22,9 @@ pub async fn graphql_handler(
     app_state: web::Data<AppState>,
     data: web::Json<GraphQLRequest>,
 ) -> impl Responder {
-    let res = data.execute(&app_state.root_node, &app_state.source).await;
+    let ctx = Context {
+        db_conn: Arc::clone(&app_state.db_conn),
+    };
+    let res = data.execute(&app_state.root_node, &ctx).await;
     serde_json::to_string(&res)
 }

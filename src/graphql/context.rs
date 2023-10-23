@@ -1,9 +1,8 @@
-use las::Reader;
+use diesel::SqliteConnection;
 use std::sync::{Arc, Mutex};
 
-pub enum Source {
-    Las(Arc<Mutex<Reader<'static>>>),
-    Null,
+pub struct Context {
+    pub db_conn: Arc<Mutex<SqliteConnection>>,
 }
 
-impl juniper::Context for Source {}
+impl juniper::Context for Context {}

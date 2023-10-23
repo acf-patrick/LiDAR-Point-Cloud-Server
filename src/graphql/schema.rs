@@ -1,12 +1,12 @@
 use juniper::*;
 
-use super::context::Source;
+use super::context::Context;
 use super::queries::las::QueryLas;
 
 /// Abstract type for query root
 pub struct Query;
 
-#[graphql_object(context = Source)]
+#[graphql_object(context = Context)]
 impl Query {
     #[graphql(description = "API version")]
     fn api() -> &str {
@@ -30,7 +30,7 @@ impl Mutation {
     }
 }
 
-pub type Schema = RootNode<'static, Query, EmptyMutation<Source>, EmptySubscription<Source>>;
+pub type Schema = RootNode<'static, Query, EmptyMutation<Context>, EmptySubscription<Context>>;
 
 pub fn create_schema() -> Schema {
     Schema::new(Query {}, EmptyMutation::new(), EmptySubscription::new())
