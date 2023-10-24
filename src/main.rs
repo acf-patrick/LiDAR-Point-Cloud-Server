@@ -2,6 +2,7 @@ mod graphql;
 mod handlers;
 mod models;
 mod schema;
+mod services;
 
 use actix_web::{web, App, HttpServer};
 use diesel::prelude::*;
