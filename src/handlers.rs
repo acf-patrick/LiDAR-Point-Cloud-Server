@@ -23,7 +23,7 @@ pub async fn graphql_handler(
     data: web::Json<GraphQLRequest>,
 ) -> impl Responder {
     let ctx = Context {
-        db_conn: Arc::clone(&app_state.db_conn),
+        db: Arc::clone(&app_state.db),
     };
     let res = data.execute(&app_state.root_node, &ctx).await;
     serde_json::to_string(&res)

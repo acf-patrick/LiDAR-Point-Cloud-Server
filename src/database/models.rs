@@ -1,4 +1,4 @@
-use crate::schema::*;
+use super::schema::*;
 use diesel::{
     prelude::{Identifiable, Insertable, Queryable},
     Selectable,

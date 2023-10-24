@@ -1,7 +1,8 @@
 use juniper::*;
 
 use super::context::Context;
-use super::queries::LasQuery;
+use super::models::File;
+// use super::queries::LasQuery;
 
 /// Abstract type for query root
 pub struct Query;
@@ -14,8 +15,9 @@ impl Query {
     }
 
     #[graphql(description = "Node for LAS/LAZ file query")]
-    fn las() -> LasQuery {
-        LasQuery
+    fn las(ctx: &Context, id: String) -> Option<File> {
+        let mut conn = ctx.db.lock().unwrap();
+        Some(File::from(conn.get_file(id)?))
     }
 }
 

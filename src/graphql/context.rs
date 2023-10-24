@@ -1,8 +1,9 @@
-use diesel::SqliteConnection;
 use std::sync::{Arc, Mutex};
 
+use crate::database::Database;
+
 pub struct Context {
-    pub db_conn: Arc<Mutex<SqliteConnection>>,
+    pub db: Arc<Mutex<Database>>,
 }
 
 impl juniper::Context for Context {}
