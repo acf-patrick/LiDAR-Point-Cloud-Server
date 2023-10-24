@@ -5,7 +5,7 @@ use diesel::{
 };
 
 /// Part composing the point cloud file
-#[derive(Queryable, Identifiable, Selectable, Insertable, Debug)]
+#[derive(Queryable, Identifiable, Selectable, Insertable, Debug, Clone)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct File {
     pub id: String,

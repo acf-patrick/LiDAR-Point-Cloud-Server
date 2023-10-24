@@ -1,6 +1,6 @@
 use diesel::{
     prelude::*,
-    r2d2::{ConnectionManager, Pool},
+    r2d2::{ConnectionManager, Pool, PooledConnection},
 };
 use dotenvy::dotenv;
 
@@ -16,6 +16,10 @@ pub struct Database {
 }
 
 impl Database {
+    fn get_conn(&mut self) -> Option<PooledConnection<ConnectionManager<SqliteConnection>>> {
+        Some(self.pool.get().ok()?)
+    }
+
     pub fn new() -> Self {
         let _ = dotenv();
 
@@ -28,14 +32,43 @@ impl Database {
         Database { pool }
     }
 
-    pub fn get_file(&mut self, id: String) -> Option<File> {
+    pub fn get_part(&mut self, part_id: String) -> Option<File> {
         use self::schema::files;
 
         let mut conn = self.pool.get().ok()?;
-        if let Ok(record) = files::table.find(id).get_result::<File>(&mut conn) {
+        if let Ok(record) = files::table.find(part_id.clone()).get_result(&mut conn) {
             Some(record)
         } else {
+            eprintln!("No matching part with ID : {part_id}");
             None
+        }
+    }
+
+    pub fn get_parts(&mut self, file_id: String) -> Vec<File> {
+        use self::schema::files;
+
+        let records = if let Ok(mut conn) = self.pool.get() {
+            files::table
+                .filter(files::file_id.eq(file_id))
+                .get_results(&mut conn)
+                .unwrap_or(vec![])
+        } else {
+            vec![]
+        };
+
+        records
+    }
+
+    pub fn delete(&mut self, part_id: String) -> Option<File> {
+        use self::schema::files::dsl::*;
+
+        let mut conn = self.get_conn()?;
+        match diesel::delete(files.filter(id.eq(part_id.clone()))).get_result(&mut conn) {
+            Ok(record) => Some(record),
+            Err(err) => {
+                eprintln!("{err}");
+                None
+            }
         }
     }
 }

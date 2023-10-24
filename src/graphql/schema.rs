@@ -14,10 +14,20 @@ impl Query {
         "v1.0.0"
     }
 
-    #[graphql(description = "Node for LAS/LAZ file query")]
-    fn las(ctx: &Context, id: String) -> Option<File> {
+    #[graphql(name = "part", description = "Get part infos")]
+    fn get_file_part_from_db(ctx: &Context, part_id: String) -> Option<File> {
         let mut conn = ctx.db.lock().unwrap();
-        Some(File::from(conn.get_file(id)?))
+        Some(File::from(conn.get_part(part_id)?))
+    }
+
+    #[graphql(
+        name = "parts",
+        description = "Get list of parts forming file with given ID"
+    )]
+    fn get_parts_by_group(ctx: &Context, file_id: String) -> Vec<File> {
+        let mut conn = ctx.db.lock().unwrap();
+        let files = conn.get_parts(file_id);
+        files.iter().map(|file| File::from(file.clone())).collect()
     }
 }
 
