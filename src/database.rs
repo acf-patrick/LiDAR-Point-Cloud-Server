@@ -71,4 +71,22 @@ impl Database {
             }
         }
     }
+
+    /// Delete all parts associated with the given file ID
+    pub fn delete_file(&mut self, id: String) -> u32 {
+        use self::schema::files;
+
+        if let Some(mut conn) = self.get_conn() {
+            let count = if let Ok(count) =
+                diesel::delete(files::table.filter(files::file_id.eq(id))).execute(&mut conn)
+            {
+                count
+            } else {
+                0
+            };
+            return count.try_into().unwrap();
+        }
+
+        0
+    }
 }

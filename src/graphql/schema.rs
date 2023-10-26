@@ -2,6 +2,7 @@ use juniper::*;
 
 use super::context::Context;
 use super::models::File;
+use super::queries::LasQuery;
 // use super::queries::LasQuery;
 
 /// Abstract type for query root
@@ -12,6 +13,11 @@ impl Query {
     #[graphql(description = "API version")]
     fn api() -> &str {
         "v1.0.0"
+    }
+
+    #[graphql(description = "Entrypoint for Las related queries")]
+    fn las(id: String) -> LasQuery {
+        LasQuery { id }
     }
 
     #[graphql(name = "part", description = "Get part infos")]
