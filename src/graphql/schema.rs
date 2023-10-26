@@ -16,8 +16,8 @@ impl Query {
     }
 
     #[graphql(description = "Entrypoint for Las related queries")]
-    fn las(id: String) -> LasQuery {
-        LasQuery { id }
+    fn las() -> LasQuery {
+        LasQuery
     }
 
     #[graphql(name = "part", description = "Get part infos")]
