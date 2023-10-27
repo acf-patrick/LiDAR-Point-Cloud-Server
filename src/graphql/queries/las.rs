@@ -1,5 +1,5 @@
-use crate::graphql::models::LasInfo;
 use crate::graphql::context::Context;
+use crate::graphql::models::LasInfo;
 use juniper::graphql_object;
 use las::{Read, Reader};
 
@@ -11,7 +11,8 @@ pub struct LasQuery;
 #[graphql_object(context = Context)]
 impl LasQuery {
     pub fn infos(id: String) -> Option<LasInfo> {
-        let buff = BufReader::new(File::open(format!("files/{id}.laz")).ok()?);
+        let base = std::env::var("PC_FILES_BASE_PATH").expect("PC_FILES_BASE_PATH variable refers to the folder containing sliced or original LAS files");
+        let buff = BufReader::new(File::open(format!("{base}/{id}.laz")).ok()?);
         let reader = Reader::new(buff).ok()?;
 
         let header = reader.header().clone();

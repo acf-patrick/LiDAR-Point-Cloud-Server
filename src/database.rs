@@ -11,6 +11,13 @@ pub mod schema;
 
 type DBPool = Pool<ConnectionManager<SqliteConnection>>;
 
+/// Represent the type of file matching given ID
+pub enum FileType {
+    Split(usize),
+    Monolithic(File),
+    Inexistent,
+}
+
 pub struct Database {
     pool: DBPool,
 }
@@ -95,5 +102,28 @@ impl Database {
 
         let mut conn = self.get_conn()?;
         files::table.find(id).get_result(&mut conn).ok()
+    }
+
+    pub fn get_file_type(&mut self, id: String) -> FileType {
+        use self::schema::{files, parts};
+
+        if let Some(mut conn) = self.get_conn() {
+            let parts_count: usize = parts::table
+                .filter(parts::file_id.eq(id.clone()))
+                .execute(&mut conn)
+                .unwrap_or(0);
+
+            if parts_count == 0 {
+                if let Ok(record) = files::table.find(id).get_result::<File>(&mut conn) {
+                    FileType::Monolithic(record)
+                } else {
+                    FileType::Inexistent
+                }
+            } else {
+                FileType::Split(parts_count)
+            }
+        } else {
+            FileType::Inexistent
+        }
     }
 }
