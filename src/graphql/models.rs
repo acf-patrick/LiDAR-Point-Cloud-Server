@@ -210,7 +210,7 @@ impl From<las::point::Classification> for Classification {
 }
 
 #[derive(GraphQLObject)]
-pub struct File {
+pub struct Part {
     pub id: String,
     pub file_id: String,
     pub x: f64,
@@ -219,9 +219,9 @@ pub struct File {
     pub edge: f64,
 }
 
-impl From<crate::database::models::File> for File {
-    fn from(value: crate::database::models::File) -> Self {
-        File {
+impl From<crate::database::models::Part> for Part {
+    fn from(value: crate::database::models::Part) -> Self {
+        Part {
             id: value.id,
             file_id: value.file_id,
             edge: value.edge.into(),

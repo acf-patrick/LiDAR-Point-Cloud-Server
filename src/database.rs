@@ -4,7 +4,7 @@ use diesel::{
 };
 use dotenvy::dotenv;
 
-use self::models::File;
+use self::models::Part;
 
 pub mod models;
 pub mod schema;
@@ -32,11 +32,11 @@ impl Database {
         Database { pool }
     }
 
-    pub fn get_part(&mut self, part_id: String) -> Option<File> {
-        use self::schema::files;
+    pub fn get_part(&mut self, part_id: String) -> Option<Part> {
+        use self::schema::parts;
 
         let mut conn = self.pool.get().ok()?;
-        if let Ok(record) = files::table.find(part_id.clone()).get_result(&mut conn) {
+        if let Ok(record) = parts::table.find(part_id.clone()).get_result(&mut conn) {
             Some(record)
         } else {
             eprintln!("No matching part with ID : {part_id}");
@@ -44,12 +44,12 @@ impl Database {
         }
     }
 
-    pub fn get_parts(&mut self, file_id: String) -> Vec<File> {
-        use self::schema::files;
+    pub fn get_parts(&mut self, file_id: String) -> Vec<Part> {
+        use self::schema::parts;
 
         let records = if let Ok(mut conn) = self.pool.get() {
-            files::table
-                .filter(files::file_id.eq(file_id))
+            parts::table
+                .filter(parts::file_id.eq(file_id))
                 .get_results(&mut conn)
                 .unwrap_or(vec![])
         } else {
@@ -59,11 +59,11 @@ impl Database {
         records
     }
 
-    pub fn delete(&mut self, part_id: String) -> Option<File> {
-        use self::schema::files::dsl::*;
+    pub fn delete(&mut self, part_id: String) -> Option<Part> {
+        use self::schema::parts::dsl::*;
 
         let mut conn = self.get_conn()?;
-        match diesel::delete(files.filter(id.eq(part_id.clone()))).get_result(&mut conn) {
+        match diesel::delete(parts.filter(id.eq(part_id.clone()))).get_result(&mut conn) {
             Ok(record) => Some(record),
             Err(err) => {
                 eprintln!("{err}");
@@ -74,11 +74,11 @@ impl Database {
 
     /// Delete all parts associated with the given file ID
     pub fn delete_file(&mut self, id: String) -> u32 {
-        use self::schema::files;
+        use self::schema::parts;
 
         if let Some(mut conn) = self.get_conn() {
             let count = if let Ok(count) =
-                diesel::delete(files::table.filter(files::file_id.eq(id))).execute(&mut conn)
+                diesel::delete(parts::table.filter(parts::file_id.eq(id))).execute(&mut conn)
             {
                 count
             } else {

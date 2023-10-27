@@ -1,7 +1,7 @@
 use juniper::*;
 
 use super::context::Context;
-use super::models::File;
+use super::models::Part;
 use super::queries::LasQuery;
 // use super::queries::LasQuery;
 
@@ -21,19 +21,19 @@ impl Query {
     }
 
     #[graphql(name = "part", description = "Get part infos")]
-    fn get_file_part_from_db(ctx: &Context, part_id: String) -> Option<File> {
+    fn get_part_part_from_db(ctx: &Context, part_id: String) -> Option<Part> {
         let mut conn = ctx.db.lock().unwrap();
-        Some(File::from(conn.get_part(part_id)?))
+        Some(Part::from(conn.get_part(part_id)?))
     }
 
     #[graphql(
         name = "parts",
-        description = "Get list of parts forming file with given ID"
+        description = "Get list of parts forming part with given ID"
     )]
-    fn get_parts_by_group(ctx: &Context, file_id: String) -> Vec<File> {
+    fn get_parts_by_group(ctx: &Context, part_id: String) -> Vec<Part> {
         let mut conn = ctx.db.lock().unwrap();
-        let files = conn.get_parts(file_id);
-        files.iter().map(|file| File::from(file.clone())).collect()
+        let parts = conn.get_parts(part_id);
+        parts.iter().map(|part| Part::from(part.clone())).collect()
     }
 }
 

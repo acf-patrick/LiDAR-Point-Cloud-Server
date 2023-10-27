@@ -1,33 +1,33 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    file (id) {
+    files (id) {
         id -> Text,
-        file_source_id -> Nullable<Integer>,
-        version_minor -> Nullable<Integer>,
-        version_major -> Nullable<Integer>,
-        date -> Nullable<Text>,
-        has_gps_time -> Nullable<Integer>,
-        has_color -> Nullable<Integer>,
-        is_compressed -> Nullable<Integer>,
-        scale_x -> Nullable<Float>,
-        scale_y -> Nullable<Float>,
-        scale_z -> Nullable<Float>,
-        offset_x -> Nullable<Float>,
-        offset_y -> Nullable<Float>,
-        offset_z -> Nullable<Float>,
-        min_x -> Nullable<Float>,
-        min_y -> Nullable<Float>,
-        min_z -> Nullable<Float>,
-        max_x -> Nullable<Float>,
-        max_y -> Nullable<Float>,
-        max_z -> Nullable<Float>,
-        number_of_points -> Nullable<Integer>,
+        file_source_id -> Integer,
+        version_minor -> Integer,
+        version_major -> Integer,
+        date -> Text,
+        has_gps_time -> Integer,
+        has_color -> Integer,
+        is_compressed -> Integer,
+        scale_x -> Float,
+        scale_y -> Float,
+        scale_z -> Float,
+        offset_x -> Float,
+        offset_y -> Float,
+        offset_z -> Float,
+        min_x -> Float,
+        min_y -> Float,
+        min_z -> Float,
+        max_x -> Float,
+        max_y -> Float,
+        max_z -> Float,
+        number_of_points -> BigInt,
     }
 }
 
 diesel::table! {
-    files (id) {
+    parts (id) {
         id -> Text,
         file_id -> Text,
         x -> Float,
@@ -37,7 +37,9 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(parts -> files (file_id));
+
 diesel::allow_tables_to_appear_in_same_query!(
-    file,
     files,
+    parts,
 );
