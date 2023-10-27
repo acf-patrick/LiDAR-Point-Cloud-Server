@@ -1,22 +1,48 @@
-use super::models::LasInfo;
-use crate::graphql::context::Context;
-use juniper::graphql_object;
-use las::{Read, Reader};
+mod file;
+mod las;
 
-use std::fs::File;
-use std::io::BufReader;
+use self::file::*;
+use self::las::*;
 
-pub struct LasQuery;
+use super::context::Context;
+use super::models::Part;
+use juniper::*;
 
-#[graphql_object(context = Context, description = "Enables query for Las/Laz files")]
-impl LasQuery {
-    pub fn infos(id: String) -> Option<LasInfo> {
-        let buff = BufReader::new(File::open(format!("files/{id}.laz")).ok()?);
-        let reader = Reader::new(buff).ok()?;
+/// Abstract type for query root
+pub struct Query;
 
-        let header = reader.header().clone();
-        Some(LasInfo::from(header))
+#[graphql_object(context = Context)]
+impl Query {
+    #[graphql(description = "API version")]
+    fn api() -> &str {
+        "v1.0.0"
     }
 
-    // pub fn group_infos(file_id: String) -> Option<
+    #[graphql(description = "Entrypoint for Las related queries")]
+    fn las() -> LasQuery {
+        LasQuery
+    }
+
+    #[graphql(description = "Entrypoint for File related queries")]
+    fn file(id: String) -> FileQuery {
+        FileQuery {
+          id
+        }
+    }
+
+    #[graphql(name = "part", description = "Get part infos")]
+    fn get_part_part_from_db(ctx: &Context, part_id: String) -> Option<Part> {
+        let mut conn = ctx.db.lock().unwrap();
+        Some(Part::from(conn.get_part(part_id)?))
+    }
+
+    #[graphql(
+        name = "parts",
+        description = "Get list of parts forming part with given ID"
+    )]
+    fn get_parts_by_group(ctx: &Context, part_id: String) -> Vec<Part> {
+        let mut conn = ctx.db.lock().unwrap();
+        let parts = conn.get_parts(part_id);
+        parts.iter().map(|part| Part::from(part.clone())).collect()
+    }
 }

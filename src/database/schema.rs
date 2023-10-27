@@ -6,7 +6,7 @@ diesel::table! {
         file_source_id -> Integer,
         version_minor -> Integer,
         version_major -> Integer,
-        date -> Text,
+        date -> Nullable<Text>,
         has_gps_time -> Integer,
         has_color -> Integer,
         is_compressed -> Integer,

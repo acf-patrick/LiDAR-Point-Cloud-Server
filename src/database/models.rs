@@ -37,7 +37,7 @@ pub struct File {
     pub file_source_id: i32,
     pub version_minor: i32,
     pub version_major: i32,
-    pub date: String,
+    pub date: Option<String>,
     pub has_gps_time: i32,
     pub has_color: i32,
     pub is_compressed: i32,

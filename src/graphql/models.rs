@@ -64,7 +64,7 @@ pub struct LasInfo {
     pub version: LasHeaderVersion,
 
     #[graphql(description = "Header's file creation date")]
-    pub date: Option<chrono::NaiveDate>,
+    pub date: Option<String>,
 
     #[graphql(description = "Describes the attributes and extra bytes of each point")]
     pub point_format: LasPointFormat,
@@ -84,11 +84,51 @@ pub struct LasInfo {
     pub number_of_points: String,
 }
 
+impl From<crate::database::models::File> for LasInfo {
+    fn from(value: crate::database::models::File) -> Self {
+        LasInfo {
+            date: value.date,
+            file_source_id: value.file_source_id,
+            max: Vector {
+                x: value.max_x.into(),
+                y: value.max_y.into(),
+                z: value.max_z.into(),
+            },
+            min: Vector {
+                x: value.min_x.into(),
+                y: value.min_y.into(),
+                z: value.min_z.into(),
+            },
+            number_of_points: format!("{}", value.number_of_points),
+            offset: Vector {
+                x: value.offset_x.into(),
+                y: value.offset_y.into(),
+                z: value.offset_z.into(),
+            },
+            point_format: LasPointFormat {
+                gps_time: value.has_gps_time > 0,
+                color: value.has_color > 0,
+                compressed: value.is_compressed > 0,
+            },
+            scale: Vector {
+                x: value.scale_x.into(),
+                y: value.scale_y.into(),
+                z: value.scale_z.into(),
+            },
+            version: LasHeaderVersion {
+                minor: value.version_minor,
+                major: value.version_major,
+            },
+        }
+    }
+}
+
 impl From<las::Header> for LasInfo {
     fn from(value: las::Header) -> Self {
         let transform = value.transforms();
+
         LasInfo {
-            date: value.date(),
+            date: value.date().map(|date| date.to_string()),
             file_source_id: value.file_source_id().into(),
             max: Vector::from(value.bounds().max),
             min: Vector::from(value.bounds().min),

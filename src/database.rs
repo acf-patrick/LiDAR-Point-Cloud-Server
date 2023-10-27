@@ -4,7 +4,7 @@ use diesel::{
 };
 use dotenvy::dotenv;
 
-use self::models::Part;
+use self::models::{File, Part};
 
 pub mod models;
 pub mod schema;
@@ -88,5 +88,12 @@ impl Database {
         }
 
         0
+    }
+
+    pub fn get_file(&mut self, id: String) -> Option<File> {
+        use self::schema::files;
+
+        let mut conn = self.get_conn()?;
+        files::table.find(id).get_result(&mut conn).ok()
     }
 }
