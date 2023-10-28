@@ -17,7 +17,7 @@ impl Mutation {
         let mut conn = ctx.db.lock()?;
 
         if let FileType::Monolithic(_) = conn.get_file_type(id) {
-            
+            Ok(0)
         } else {
             Err(FieldError::new(
                 "Invalid ID provided",

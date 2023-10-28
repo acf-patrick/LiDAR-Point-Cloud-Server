@@ -1,11 +1,9 @@
 ARG RUST_VERSION=1.70.0
-ARG APP_NAME=server
+ARG APP_NAME=point_cloud_server
 
-##################################################################################
-# Build stage
+FROM rust:${RUST_VERSION}-slim-bullseye AS final
 
-FROM rust:${RUST_VERSION}-slim-bullseye AS build
-WORKDIR /server
+WORKDIR /${APP_NAME}
 
 # Copy source code
 
@@ -20,16 +18,11 @@ RUN cargo install diesel_cli --no-default-features --features sqlite
 
 # Run database migrations
 
-RUN mkdir -p /app/files
+RUN mkdir -p files
 RUN diesel migration run
 
 # Build step
-RUN cargo build --locked --release && cp ./target/release/$APP_NAME /bin/server
+RUN cargo build --locked --release
 
-###################################################################################
-# Minimal image for final stage
-
-FROM scratch AS final
-COPY --from=build /bin/server /bin/
 EXPOSE ${PORT}
-CMD ["/bin/server"]
+ENTRYPOINT [ "./target/release/point_cloud_server" ]

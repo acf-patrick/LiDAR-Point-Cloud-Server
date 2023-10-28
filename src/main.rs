@@ -33,7 +33,7 @@ async fn main() -> std::io::Result<()> {
             .service(graphiql)
             .service(graphql_handler)
     })
-    .bind(("127.0.0.1", port.parse().unwrap()))?
+    .bind(("127.0.0.1", port.parse().unwrap_or(80)))?
     .run()
     .await
 }
