@@ -1,6 +1,7 @@
 mod graphql;
 mod handlers;
 mod database;
+mod services;
 
 use actix_web::{web, App, HttpServer};
 use database::Database;

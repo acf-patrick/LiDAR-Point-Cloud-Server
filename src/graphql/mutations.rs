@@ -1,6 +1,6 @@
 use crate::database::FileType;
 
-use super::context::Context;
+use super::{context::Context, models::LasInfo};
 use juniper::*;
 
 /// Abstract type for mutation root
@@ -11,6 +11,11 @@ impl Mutation {
     #[graphql(description = "API version")]
     fn api() -> &str {
         "v1.0.0"
+    }
+
+    #[graphql(description = "Write file infos into database")]
+    fn register(_ctx: &Context, _id: String) -> FieldResult<LasInfo> {
+        Ok(LasInfo::default())
     }
 
     #[graphql(description = "Split monolithic file to parts and delete original file")]

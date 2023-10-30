@@ -1,6 +1,6 @@
 use juniper::*;
 
-#[derive(GraphQLObject)]
+#[derive(GraphQLObject, Default)]
 pub struct LasHeaderVersion {
     pub minor: i32,
     pub major: i32,
@@ -16,7 +16,7 @@ impl From<las::Header> for LasHeaderVersion {
     }
 }
 
-#[derive(GraphQLObject)]
+#[derive(GraphQLObject, Default)]
 pub struct LasPointFormat {
     #[graphql(description = "true if includes GPS time")]
     pub gps_time: bool,
@@ -39,7 +39,7 @@ impl From<las::Header> for LasPointFormat {
     }
 }
 
-#[derive(GraphQLObject)]
+#[derive(GraphQLObject, Default)]
 pub struct Vector {
     pub x: f64,
     pub y: f64,
@@ -56,7 +56,7 @@ impl From<las::Vector<f64>> for Vector {
     }
 }
 
-#[derive(GraphQLObject)]
+#[derive(GraphQLObject, Default)]
 pub struct LasInfo {
     #[graphql(description = "This is often the flightline number")]
     pub file_source_id: i32,
