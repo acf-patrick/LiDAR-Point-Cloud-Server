@@ -2,7 +2,6 @@ use diesel::{
     prelude::*,
     r2d2::{ConnectionManager, Pool, PooledConnection},
 };
-use dotenvy::dotenv;
 
 use self::models::{File, Part};
 
@@ -28,8 +27,6 @@ impl Database {
     }
 
     pub fn new() -> Self {
-        let _ = dotenv();
-
         let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
         let manager = ConnectionManager::<SqliteConnection>::new(db_url);
         let pool = Pool::builder()

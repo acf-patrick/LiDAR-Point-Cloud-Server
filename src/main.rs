@@ -25,7 +25,7 @@ async fn main() -> std::io::Result<()> {
         db: Arc::new(Mutex::new(Database::new())),
     });
 
-    println!("Server running on port 8080");
+    println!("Server running on port {port}");
     HttpServer::new(move || {
         App::new()
             .app_data(app_state.clone())
@@ -33,7 +33,7 @@ async fn main() -> std::io::Result<()> {
             .service(graphiql)
             .service(graphql_handler)
     })
-    .bind(("127.0.0.1", port.parse().unwrap_or(80)))?
+    .bind(("127.0.0.1", port.parse().unwrap()))?
     .run()
     .await
 }

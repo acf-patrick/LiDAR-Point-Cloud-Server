@@ -13,7 +13,8 @@ impl Mutation {
         "v1.0.0"
     }
 
-    fn split(&self, ctx: &Context, id: String) -> FieldResult<i32> {
+    #[graphql(description = "Split monolithic file to parts and delete original file")]
+    fn split(ctx: &Context, id: String) -> FieldResult<i32> {
         let mut conn = ctx.db.lock()?;
 
         if let FileType::Monolithic(_) = conn.get_file_type(id) {
