@@ -14,7 +14,9 @@ impl Mutation {
     }
 
     #[graphql(description = "Write file infos into database")]
-    fn register(_ctx: &Context, _id: String) -> FieldResult<LasInfo> {
+    fn register(ctx: &Context, id: String) -> FieldResult<LasInfo> {
+        let extractors = ctx.info_extractors.lock()?;
+
         Ok(LasInfo::default())
     }
 
