@@ -1,6 +1,7 @@
+use crate::database::models::File;
 use juniper::*;
 
-#[derive(GraphQLObject, Default)]
+#[derive(GraphQLObject, Clone, Default)]
 pub struct LasHeaderVersion {
     pub minor: i32,
     pub major: i32,
@@ -16,7 +17,7 @@ impl From<las::Header> for LasHeaderVersion {
     }
 }
 
-#[derive(GraphQLObject, Default)]
+#[derive(GraphQLObject, Clone, Default)]
 pub struct LasPointFormat {
     #[graphql(description = "true if includes GPS time")]
     pub gps_time: bool,
@@ -39,7 +40,7 @@ impl From<las::Header> for LasPointFormat {
     }
 }
 
-#[derive(GraphQLObject, Default)]
+#[derive(GraphQLObject, Clone, Default)]
 pub struct Vector {
     pub x: f64,
     pub y: f64,
@@ -56,7 +57,7 @@ impl From<las::Vector<f64>> for Vector {
     }
 }
 
-#[derive(GraphQLObject, Default)]
+#[derive(GraphQLObject, Default, Clone)]
 pub struct LasInfo {
     #[graphql(description = "This is often the flightline number")]
     pub file_source_id: i32,
@@ -84,8 +85,8 @@ pub struct LasInfo {
     pub number_of_points: String,
 }
 
-impl From<crate::database::models::File> for LasInfo {
-    fn from(value: crate::database::models::File) -> Self {
+impl From<File> for LasInfo {
+    fn from(value: File) -> Self {
         LasInfo {
             date: value.date,
             file_source_id: value.file_source_id,

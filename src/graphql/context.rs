@@ -16,7 +16,7 @@ pub struct Context {
 impl juniper::Context for Context {}
 
 impl Context {
-    /// Check what kind of file maps to the given ID. Otherwise returns None.
+    /// Check what kind of file maps to the given ID.
     pub fn file_format(&self, id: String) -> Result<String, String> {
         let base_path = std::env::var("PC_FILES_BASE_PATH").map_err(|err| err.to_string())?;
         let entries = fs::read_dir(base_path).map_err(|err| err.to_string())?;

@@ -36,24 +36,24 @@ impl Database {
         Database { pool }
     }
 
-    pub fn get_part(&mut self, part_id: String) -> Option<Part> {
+    pub fn get_part(&mut self, id: String) -> Option<Part> {
         use self::schema::parts;
 
         let mut conn = self.pool.get().ok()?;
-        if let Ok(record) = parts::table.find(part_id.clone()).get_result(&mut conn) {
+        if let Ok(record) = parts::table.find(id.clone()).get_result(&mut conn) {
             Some(record)
         } else {
-            eprintln!("No matching part with ID : {part_id}");
+            eprintln!("No matching part with ID : {id}");
             None
         }
     }
 
-    pub fn get_parts(&mut self, file_id: String) -> Vec<Part> {
+    pub fn get_parts(&mut self, id: String) -> Vec<Part> {
         use self::schema::parts;
 
         let records = if let Ok(mut conn) = self.pool.get() {
             parts::table
-                .filter(parts::file_id.eq(file_id))
+                .filter(parts::file_id.eq(id))
                 .get_results(&mut conn)
                 .unwrap_or(vec![])
         } else {
@@ -63,11 +63,11 @@ impl Database {
         records
     }
 
-    pub fn delete(&mut self, part_id: String) -> Option<Part> {
-        use self::schema::parts::dsl::*;
+    pub fn delete_part(&mut self, id: String) -> Option<Part> {
+        use self::schema::parts;
 
         let mut conn = self.get_conn()?;
-        match diesel::delete(parts.filter(id.eq(part_id.clone()))).get_result(&mut conn) {
+        match diesel::delete(parts::table.filter(parts::id.eq(id.clone()))).get_result(&mut conn) {
             Ok(record) => Some(record),
             Err(err) => {
                 eprintln!("{err}");
@@ -76,14 +76,31 @@ impl Database {
         }
     }
 
-    /// Delete all parts associated with the given file ID
+    /// Register file into database
+    pub fn register_file(&mut self, file: File) -> Result<(), String> {
+        use self::schema::files::dsl::*;
+
+        if let Some(mut conn) = self.get_conn() {
+            diesel::insert_into(files)
+                .values(file)
+                .execute(&mut conn)
+                .map_err(|err| err.to_string())?;
+            Ok(())
+        } else {
+            Err("Failed to connect to database".to_owned())
+        }
+    }
+
+    /// Delete file and all of its parts.
     pub fn delete_file(&mut self, id: String) -> u32 {
-        use self::schema::parts;
+        use self::schema::{files, parts};
 
         if let Some(mut conn) = self.get_conn() {
             let count = if let Ok(count) =
-                diesel::delete(parts::table.filter(parts::file_id.eq(id))).execute(&mut conn)
+                diesel::delete(parts::table.filter(parts::file_id.eq(id.clone())))
+                    .execute(&mut conn)
             {
+                let _ = diesel::delete(files::table.filter(files::id.eq(id))).execute(&mut conn);
                 count
             } else {
                 0
