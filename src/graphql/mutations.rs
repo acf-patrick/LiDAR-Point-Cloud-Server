@@ -1,7 +1,7 @@
-use crate::database::FileType;
-
 use super::{context::Context, models::LasInfo};
+use crate::database::FileType;
 use juniper::*;
+use uuid::Uuid;
 
 /// Abstract type for mutation root
 pub struct Mutation;
@@ -15,13 +15,34 @@ impl Mutation {
 
     #[graphql(description = "Write file infos into database")]
     fn register(ctx: &Context, id: String) -> FieldResult<LasInfo> {
-        let extractors = ctx.info_extractors.lock()?;
+        // check if input is a valid UUID v4
+        let _ = Uuid::parse_str(&id)?;
 
-        Ok(LasInfo::default())
+        let ext = ctx.file_format(id.clone())?;
+
+        if let Ok(extractors) = ctx.info_extractors.lock() {
+            if let Some(extractor) = extractors.get(&ext) {
+                let infos = extractor.extract(id)?;
+                Ok(infos)
+            } else {
+                Err(FieldError::new(
+                    format!("Can not read informations from {ext}"),
+                    juniper::Value::Null,
+                ))
+            }
+        } else {
+            Err(FieldError::new(
+                "Failed to perform infos extraction on file",
+                graphql_value!("Unable to take lock on extractors"),
+            ))
+        }
     }
 
     #[graphql(description = "Split monolithic file to parts and delete original file")]
     fn split(ctx: &Context, id: String) -> FieldResult<i32> {
+        // check if input is a valid UUID v4
+        let _ = Uuid::parse_str(&id)?;
+
         let mut conn = ctx.db.lock()?;
 
         if let FileType::Monolithic(_) = conn.get_file_type(id) {
