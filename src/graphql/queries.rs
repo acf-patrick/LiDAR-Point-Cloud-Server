@@ -1,11 +1,5 @@
-mod file;
-mod las;
-
-use self::file::*;
-use self::las::*;
-
 use super::context::Context;
-use super::models::Part;
+use super::models::{LasInfo, Part};
 use juniper::*;
 use uuid::Uuid;
 
@@ -19,17 +13,14 @@ impl Query {
         "v1.0.0"
     }
 
-    #[graphql(description = "Entrypoint for Las related queries")]
-    fn las() -> LasQuery {
-        LasQuery
-    }
-
-    #[graphql(description = "Entrypoint for File related queries")]
-    fn file(id: String) -> FieldResult<FileQuery> {
+    #[graphql(name = "file", description = "Get file information from database")]
+    fn get_file_infos(ctx: &Context, id: String) -> FieldResult<LasInfo> {
         // check if input is a valid UUID v4
         let _ = Uuid::parse_str(&id)?;
 
-        Ok(FileQuery { id })
+        let mut conn = ctx.db.lock().map_err(|err| err.to_string())?;
+
+        Err(FieldError::new("", juniper::Value::Null))
     }
 
     #[graphql(name = "part", description = "Get part infos")]
@@ -59,9 +50,9 @@ impl Query {
         name = "parts",
         description = "Get list of parts forming part with given ID"
     )]
-    fn get_parts_by_group(ctx: &Context, part_id: String) -> FieldResult<Vec<Part>> {
+    fn get_parts_by_group(ctx: &Context, file_id: String) -> FieldResult<Vec<Part>> {
         // check if input is a valid UUID v4
-        let _ = Uuid::parse_str(&part_id)?;
+        let _ = Uuid::parse_str(&file_id)?;
 
         let mut conn = ctx.db.lock().map_err(|err| {
             FieldError::new(
@@ -69,7 +60,7 @@ impl Query {
                 graphql_value!(err.to_string()),
             )
         })?;
-        let parts = conn.get_parts(part_id);
+        let parts = conn.get_parts(file_id);
         Ok(parts.iter().map(|part| Part::from(part.clone())).collect())
     }
 }

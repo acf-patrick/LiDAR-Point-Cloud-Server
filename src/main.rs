@@ -45,7 +45,7 @@ async fn main() -> std::io::Result<()> {
         },
     });
 
-    println!("Server running on port {port}");
+    println!("🚀 Server running on port {port}");
     HttpServer::new(move || {
         App::new()
             .app_data(app_state.clone())
